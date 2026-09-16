@@ -1,10 +1,31 @@
-function SearchBar() {
+import { useState } from "react"
+
+function SearchBar({
+  filterText,
+  inStockOnly,
+  onFilterTextChange,
+  onInStockOnlyChange,
+}) {
   return (
     <form>
-      <input type="text" placeholder="Search..." />
+      <input
+        type="text"
+        value={filterText}
+        onChange={(e) => {
+          onFilterTextChange(e.target.value)
+        }}
+        placeholder="Search..."
+      />
       <br />
       <label>
-        <input type="checkbox" /> Only show products in stock
+        <input
+          type="checkbox"
+          checked={inStockOnly}
+          onChange={(e) => {
+            onInStockOnlyChange(e.target.checked)
+          }}
+        />{" "}
+        Only show products in stock
       </label>
     </form>
   )
@@ -32,11 +53,18 @@ function ProductRow({ product }) {
   )
 }
 
-function ProductTable({ products }) {
+function ProductTable({ products, filterText, inStockOnly }) {
   let lastCategory = null
   const rows = []
 
   products.forEach((product) => {
+    // If name doesn't contain the filterText, return
+    if (product.name.toLowerCase().indexOf(filterText.toLowerCase()) === -1)
+      return
+
+    // If inStockOnly is checked, and product.stocked is false, return
+    if (inStockOnly && !product.stocked) return
+
     if (product.category !== lastCategory) {
       rows.push(
         <ProductCategoryRow
@@ -65,10 +93,22 @@ function ProductTable({ products }) {
   )
 }
 function FilterableProductTable({ products }) {
+  const [filterText, setFilterText] = useState("")
+  const [inStockOnly, setInStockOnly] = useState(false)
+
   return (
     <div>
-      <SearchBar />
-      <ProductTable products={products} />
+      <SearchBar
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+        onFilterTextChange={setFilterText}
+        onInStockOnlyChange={setInStockOnly}
+      />
+      <ProductTable
+        products={products}
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+      />
     </div>
   )
 }
